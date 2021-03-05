@@ -2,7 +2,6 @@ from requests import get, post
 import re
 import json
 import os
-import fnmatch
 from bs4 import BeautifulSoup
 import lxml
 
@@ -73,53 +72,32 @@ class LocalUpdateSections(object):
 ################################################
 
 courseid = "24" 
-# Get all sections of the course.
-
-
-# Update sections. 
-
-# you add the other links here - the pdf and video - 26min video 2
-#summary = '<a href = "https://mikhail-cct.github.io/ooapp2/wk3/#/16"> Testing </a>'
-
+# define the data 
 data = [{'type': 'num', 'section': 1, 'summary': '',
  'summaryformat': 1, 'visible': 1 , 'highlight': 0, 
  'sectionformatoptions': [{'name': 'level', 'value': '1'}]}]
 
-#data[0]['summary'] = summary
-
-#sec_write = LocalUpdateSections(courseid, data)
 
 
 # this function takes the folder name and string "wk" as inputs and returns any number that comes after the string in a folder name.
-# This means that a saturday or "s" lecture will still be placed in the correct week number. 
+# This means that a folder called "wk10" will return "10"
 def find_week_number(text, c):
     return re.findall(r'%s(\d+)' % c, text)
 
 
-# Walks through current directory 
+# Walks through current directory in folders containing "wk"
 for folder , sub_folders , files in os.walk(os.getcwd()):
-    if ("wk" in folder) or ("Wk" in folder):
+    if (("wk" in folder) or ("Wk" in folder)) and ("index.html" in files):
+    
     
     # Finds the week number from the folder name and assigns to variable week - returns a list which must be converted to str or int to be used later
         week = find_week_number(folder, 'wk')
-        #print("Wk num is:", week)
-        #print("Type:", type(week))
-
+        # convert week number to int - it only contains one element in the list, so the first element is all we need
         week_int = int(week[0])
-        #print("Wkint num is:", week_int)
-        #print("Type int:", type(week_int))
-
-        # Converting into string - it only contains one element in the list, so the first element is all we need
+        # Converting into string 
         week_string = str(week[0])
-        
 
-       
-    
-
-        # Creates a list of the files in the current directory on github  
-        git_files = files
-        #print("Git files are:", git_files)  
-
+        print("Wk num is:", week_string)    
         # Generates a link using the same link root and adding the week number
         link_root = str('https://mikhail-cct.github.io/ca3-test/wk')
         link_to_this_slide = str(link_root + week_string)
@@ -133,9 +111,6 @@ for folder , sub_folders , files in os.walk(os.getcwd()):
         summary = str(html_root + '"'+ link_to_this_slide + '"' + html_shoot)
         print("Summary: ", summary)
 
-
-
-
         # Assign the correct summary
         data[0]['summary'] = summary
 
@@ -146,14 +121,6 @@ for folder , sub_folders , files in os.walk(os.getcwd()):
         sec_write = LocalUpdateSections(courseid, data)
 
         sec = LocalGetSections(courseid)
-        print(json.dumps(sec.getsections[1]['summary'], indent=4, sort_keys=True))
+        #print(json.dumps(sec.getsections[1]['summary'], indent=4, sort_keys=True))
 
-
-
-        # check whether link to the slide exists on the moodle
-        # get moodle section summary
-        #sec = LocalGetSections(courseid)
-        print("Moodle secion summary:", json.dumps(sec.getsections[week_int]['summary'], indent=4, sort_keys=True)) 
-       # if link_to_this_slide not in sec:
-
-            
+        #print("Moodle secion summary:", json.dumps(sec.getsections[week_int]['summary'], indent=4, sort_keys=True)) 
