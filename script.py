@@ -95,28 +95,31 @@ print(soup)
 get_all_video_info = soup.find_all('div',class_ = 'Q5txwe') 
 print("Video info: ", get_all_video_info)
 
-
+#create empty lists to store the timestamp and id for videos 
 video_time_list = []
 video_id_list = []
 
+#loop through the videos 
 for video in get_all_video_info:
 
+#find the id for each video and add to video id list 
     video_id = video.parent.parent.parent.parent.attrs['data-id']
     video_id_list.append(video_id)
 
+#find the date pattern and add to list 
     date_pattern = re.search('\d{4}-\d{2}-\d{2}', str(video))
     video_times = datetime.datetime.strptime(date_pattern.group(), '%Y-%m-%d').date()
+    video_time_list.append(video_times)
     print("time", video_times)
+
 print("Video id list: ", video_id_list)
+print("Video time list: ", video_time_list)
 
 
-
-video_dict = dict()
-
-
-
-
-
+#zip the id and dates together so they can be stored together as a dict for easy access later, with the keys and values corresponding to id and time for each video. 
+zip_iterator = zip(video_id_list, video_time_list)
+video_dict = dict(zip_iterator)
+print("Dict", video_dict)
 
 
 # Walks through current directory in folders containing "wk"
@@ -143,10 +146,6 @@ for folder , sub_folders , files in os.walk(os.getcwd()):
   
 
         
-        
-
-
-        
         # create the summary
         summary = str(html_root + '"'+ link_to_this_slide + '"' + html_link_shoot)
                        
@@ -163,3 +162,10 @@ for folder , sub_folders , files in os.walk(os.getcwd()):
 
         sec = LocalGetSections(courseid)
    
+
+
+
+
+
+
+
