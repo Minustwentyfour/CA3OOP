@@ -2,7 +2,7 @@ from requests import get, post
 import re
 import json
 import os
-from bs4 import BeautifulSoup
+import bs4 
 import lxml
 
 # Module variables to connect to moodle api:
@@ -98,17 +98,34 @@ for folder , sub_folders , files in os.walk(os.getcwd()):
         week_string = str(week[0])
 
         print("Wk num is:", week_string)    
-        # Generates a link using the same link root and adding the week number
-        link_root = str('https://mikhail-cct.github.io/ca3-test/wk')
-        link_to_this_slide = str(link_root + week_string)
+        # Generates a link to the slides using the same link root and adding the week number
+        slides_link_root = str('https://mikhail-cct.github.io/ca3-test/wk')
+        link_to_this_slide = str(slides_link_root + week_string)
         #print("Link to slide: ", link_to_this_slide)
 
-        #create html root and shoot (?! oppisite end to the root?!)
+        #create html root and shoot (?! shoot is the opposite end to the root, right?! - That's what I mean anyway)
         html_root = str("<a href=")
-        html_shoot = str(">"+ "Week Number "+ week_string + "</a><br>")
+        html_link_shoot = str(">"+ "Week Number "+ week_string + "</a><br>")
+  
+
+        #Generate link to google videos
+        video_page = get("https://drive.google.com/drive/folders/1pFHUrmpLv9gEJsvJYKxMdISuQuQsd_qX")
+        #type(video_page)
+        video_page.text
+        soup = bs4.BeautifulSoup(video_page.text, "lxml")
+        print(soup)
+        get_all_video_info = soup.find_all('div',class_ = 'Q5txwe') 
+        print("Video info: ", get_all_video_info)
+        for video in get_all_video_info:
+            video_id = []
+            video_id = video.parent.parent.parent.parent.attrs['data-id']
+            print("Video id: ", video_id)
+
+
         
         # create the summary
-        summary = str(html_root + '"'+ link_to_this_slide + '"' + html_shoot)
+        summary = str(html_root + '"'+ link_to_this_slide + '"' + html_link_shoot)
+                       
         print("Summary: ", summary)
 
         # Assign the correct summary
@@ -121,6 +138,4 @@ for folder , sub_folders , files in os.walk(os.getcwd()):
         sec_write = LocalUpdateSections(courseid, data)
 
         sec = LocalGetSections(courseid)
-        #print(json.dumps(sec.getsections[1]['summary'], indent=4, sort_keys=True))
-
-        #print("Moodle secion summary:", json.dumps(sec.getsections[week_int]['summary'], indent=4, sort_keys=True)) 
+   
