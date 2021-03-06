@@ -85,6 +85,24 @@ def find_week_number(text, c):
     return re.findall(r'%s(\d+)' % c, text)
 
 
+#Generate link to google videos
+        video_page = get("https://drive.google.com/drive/folders/1pFHUrmpLv9gEJsvJYKxMdISuQuQsd_qX")
+        #type(video_page)
+        video_page.text
+        soup = bs4.BeautifulSoup(video_page.text, "lxml")
+        print(soup)
+        get_all_video_info = soup.find_all('div',class_ = 'Q5txwe') 
+        print("Video info: ", get_all_video_info)
+        for video in get_all_video_info:
+            video_id = []
+            video_id = video.parent.parent.parent.parent.attrs['data-id']
+            print("Video id: ", video_id)
+        for video in get_all_video_info:
+            video_timestamp = []
+            video_timestamp = video.parent.parent.parent.parent.attrs['td']
+            print("Video timestamps: ", video_timestamp)
+
+
 # Walks through current directory in folders containing "wk"
 for folder , sub_folders , files in os.walk(os.getcwd()):
     if (("wk" in folder) or ("Wk" in folder)) and ("index.html" in files):
@@ -108,18 +126,8 @@ for folder , sub_folders , files in os.walk(os.getcwd()):
         html_link_shoot = str(">"+ "Week Number "+ week_string + "</a><br>")
   
 
-        #Generate link to google videos
-        video_page = get("https://drive.google.com/drive/folders/1pFHUrmpLv9gEJsvJYKxMdISuQuQsd_qX")
-        #type(video_page)
-        video_page.text
-        soup = bs4.BeautifulSoup(video_page.text, "lxml")
-        print(soup)
-        get_all_video_info = soup.find_all('div',class_ = 'Q5txwe') 
-        print("Video info: ", get_all_video_info)
-        for video in get_all_video_info:
-            video_id = []
-            video_id = video.parent.parent.parent.parent.attrs['data-id']
-            print("Video id: ", video_id)
+        
+        
 
 
         
