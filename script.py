@@ -85,24 +85,6 @@ def find_week_number(text, c):
     return re.findall(r'%s(\d+)' % c, text)
 
 
-#Generate link to google videos
-        video_page = get("https://drive.google.com/drive/folders/1pFHUrmpLv9gEJsvJYKxMdISuQuQsd_qX")
-        #type(video_page)
-        video_page.text
-        soup = bs4.BeautifulSoup(video_page.text, "lxml")
-        print(soup)
-        get_all_video_info = soup.find_all('div',class_ = 'Q5txwe') 
-        print("Video info: ", get_all_video_info)
-        for video in get_all_video_info:
-            video_id = []
-            video_id = video.parent.parent.parent.parent.attrs['data-id']
-            print("Video id: ", video_id)
-        for video in get_all_video_info:
-            video_timestamp = []
-            video_timestamp = video.parent.parent.parent.parent.attrs['td']
-            print("Video timestamps: ", video_timestamp)
-
-
 # Walks through current directory in folders containing "wk"
 for folder , sub_folders , files in os.walk(os.getcwd()):
     if (("wk" in folder) or ("Wk" in folder)) and ("index.html" in files):
@@ -124,16 +106,26 @@ for folder , sub_folders , files in os.walk(os.getcwd()):
         #create html root and shoot (?! shoot is the opposite end to the root, right?! - That's what I mean anyway)
         html_root = str("<a href=")
         html_link_shoot = str(">"+ "Week Number "+ week_string + "</a><br>")
-  
+        #html_video_shoot = str(">"+ "Week Number "+ week_string + "</a><br>")
 
-        
-        
+        #Generate link to google videos
+        video_page = get("https://drive.google.com/drive/folders/1pFHUrmpLv9gEJsvJYKxMdISuQuQsd_qX")
+        #type(video_page)
+        video_page.text
+        soup = bs4.BeautifulSoup(video_page.text, "lxml")
+        print(soup)
+        get_all_video_info = soup.find_all('div',class_ = 'Q5txwe') 
+        print("Video info: ", get_all_video_info)
+        for video in get_all_video_info:
+            video_id = []
+            video_id = video.parent.parent.parent.parent.attrs['data-id']
+            print("Video id: ", video_id)
 
 
         
         # create the summary
         summary = str(html_root + '"'+ link_to_this_slide + '"' + html_link_shoot)
-                       
+                       # + html_root + '"'+ link_to_this_video + '"' + html_video_shoot)
         print("Summary: ", summary)
 
         # Assign the correct summary
@@ -146,4 +138,14 @@ for folder , sub_folders , files in os.walk(os.getcwd()):
         sec_write = LocalUpdateSections(courseid, data)
 
         sec = LocalGetSections(courseid)
-   
+        #print(json.dumps(sec.getsections[1]['summary'], indent=4, sort_keys=True))
+
+        print("Moodle secion summary:", json.dumps(sec.getsections[week_int]['summary'], indent=4, sort_keys=True)) 
+
+
+
+
+
+
+
+
