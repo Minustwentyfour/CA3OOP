@@ -9,6 +9,12 @@ from lxml import html
 from urllib.request import urlopen
 
 
+"""
+This section of the code is used to connect to Moodle API
+
+"""
+
+
 # Module variables to connect to moodle api:
 ## Insert token and URL for your site here. 
 ## Mind that the endpoint can start with "/moodle" depending on your installation.
@@ -81,12 +87,22 @@ data = [{'type': 'num', 'section': 1, 'summary': '',
  'summaryformat': 1, 'visible': 1 , 'highlight': 0, 
  'sectionformatoptions': [{'name': 'level', 'value': '1'}]}]
 
-# this function takes the folder name and string "wk" as inputs and returns any number that comes after the string in a folder name.
-# This means that a folder called "wk10" will return "10"
+
+"""
+This function takes the folder name and string "wk" as inputs and returns any number that comes after the string in a folder name.
+This means that a folder called "wk10" will return the value "10".
+
+"""
 def find_week_number(text, c):
     return re.findall(r'%s(\d+)' % c, text)
 
-#Generate link to google videos
+
+"""
+This section of the code is for getting the video info
+
+"""
+
+#Get info about google drive videos
 video_page = get("https://drive.google.com/drive/folders/1pFHUrmpLv9gEJsvJYKxMdISuQuQsd_qX")
 video_page.text
 soup = bs4.BeautifulSoup(video_page.text, "lxml")
@@ -138,6 +154,13 @@ for video in get_all_video_info:
 #zip the id and dates together so they can be stored together as a dict for easy access later, with the keys and values corresponding to id and time for each video. 
 zip_iterator = zip(video_html_list, video_week_num_list)
 video_dict = dict(zip_iterator)
+
+"""
+This section of the code is for getting the slide info
+
+"""
+
+
 
 #create empty lists for our week number and slide links
 slide_week_list = []
@@ -193,6 +216,11 @@ for folder , sub_folders , files in os.walk(os.getcwd()):
 zip_iterator = zip(slide_link_list, slide_week_list)
 slide_dict = dict(zip_iterator)
 
+"""
+This section of the code is for updating the moodle with the matching slide and video links
+
+"""
+
 # work out how many moodle sections need to be updated - this may be different depending on if there are more videos or slides.  
 max_summary = ()
 if len(video_dict) >= len(slide_dict):
@@ -224,7 +252,9 @@ for i in range(max_summary):
 # Add summaries together. If slide summary is blank, only use video summary, and vice versa. Otherwise add concat summary so both summaries are added. 
     both_summary = str(slide_summary) + str(video_summary)
     
-    if str(slide_summary) == "()":
+    if str(both_summary) == "()()":
+        summary = str("")
+    elif str(slide_summary) == "()":
         summary = str(video_summary)
     elif str(video_summary) == "()":
         summary = str(slide_summary)
