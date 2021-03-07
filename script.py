@@ -95,9 +95,11 @@ print(soup)
 get_all_video_info = soup.find_all('div',class_ = 'Q5txwe') 
 print("Video info: ", get_all_video_info)
 
-#create empty lists to store the timestamp and id for videos 
+#create empty lists to store the timestamp, id, links for videos 
 video_time_list = []
 video_id_list = []
+video_link_list = []
+video_html_list = []
 
 #loop through the videos 
 for video in get_all_video_info:
@@ -112,12 +114,26 @@ for video in get_all_video_info:
     video_time_list.append(video_times)
     print("time", video_times)
 
+# Generates a link to the slides using the same link root and adding the week number
+    video_link_root = str('https://drive.google.com/file/d/')
+    video_link_shoot = str('/view')
+    link_to_this_video = str(video_link_root + video_id + video_link_shoot)
+    video_link_list.append(link_to_this_video)
+    print("Link to video: ", link_to_this_video)
+
+#create html root and shoot (?! shoot is the opposite end to the root, right?! - That's what I mean anyway)
+    html_root = str("<a href=")
+    html_video_shoot = str(">"+ "Lecture from date: "+ str(video_times) + "</a><br>")
+    video_html_link = str(html_root + '"'+ link_to_this_video + '"' + html_video_shoot)
+    video_html_list.append(video_html_link)
+    print("html Link to video: ", video_html_link)
+
 print("Video id list: ", video_id_list)
 print("Video time list: ", video_time_list)
 
 
 #zip the id and dates together so they can be stored together as a dict for easy access later, with the keys and values corresponding to id and time for each video. 
-zip_iterator = zip(video_id_list, video_time_list)
+zip_iterator = zip(video_link_list, video_time_list)
 video_dict = dict(zip_iterator)
 print("Dict", video_dict)
 
@@ -143,11 +159,12 @@ for folder , sub_folders , files in os.walk(os.getcwd()):
         #create html root and shoot (?! shoot is the opposite end to the root, right?! - That's what I mean anyway)
         html_root = str("<a href=")
         html_link_shoot = str(">"+ "Week Number "+ week_string + "</a><br>")
+        slide_link = str(html_root + '"'+ link_to_this_slide + '"' + html_link_shoot)
   
 
         
         # create the summary
-        summary = str(html_root + '"'+ link_to_this_slide + '"' + html_link_shoot)
+        summary = str(slide_link)
                        
         print("Summary: ", summary)
 
@@ -161,11 +178,3 @@ for folder , sub_folders , files in os.walk(os.getcwd()):
         sec_write = LocalUpdateSections(courseid, data)
 
         sec = LocalGetSections(courseid)
-   
-
-
-
-
-
-
-
