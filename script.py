@@ -100,6 +100,7 @@ video_date_list = []
 video_id_list = []
 video_link_list = []
 video_html_list = []
+video_week_num_list = []
 
 #loop through the videos 
 for video in get_all_video_info:
@@ -114,19 +115,7 @@ for video in get_all_video_info:
     video_date_list.append(video_date)
     print("time", video_date)
 
-# find the week number. Semester started on september 28th, which was week number 40b in the year - so we can calculate from here dates for the year
-# If the week number is bigger than 40, then we are after september 28th, so subtract 39 to make this week 1. 
-# If it is smaller than 40, then we must be in 2021 and so we add 14 as it is the 14th week in the semester. 
-    video_calender_week_num = video_date.strftime("%V")
-    video_semester_week_num = ()
-    if int(video_calender_week_num) >= 40:
-        video_semester_week_num = int(video_calender_week_num) - 39
-    else:
-        video_semester_week_num = int(video_calender_week_num) + 14
-    print("Vid wk num", video_semester_week_num)
-   
-
-# Generates a link to the slides using the same link root and adding the week number
+    # Generates a link to the slides using the same link root and adding the week number
     video_link_root = str('https://drive.google.com/file/d/')
     video_link_shoot = str('/view')
     link_to_this_video = str(video_link_root + video_id + video_link_shoot)
@@ -135,14 +124,30 @@ for video in get_all_video_info:
 
 #create html root and shoot (?! shoot is the opposite end to the root, right?! - That's what I mean anyway)
     html_root = str("<a href=")
-    html_video_shoot = str(">"+ "Lecture from date: "+ str(video_date) + "</a><br>")
+    html_video_shoot = str(">"+ "Video Link for lecture: "+ str(video_date) + "</a><br>")
     video_html_link = str(html_root + '"'+ link_to_this_video + '"' + html_video_shoot)
     video_html_list.append(video_html_link)
     print("html Link to video: ", video_html_link)
 
+# find the week number. Semester started on september 28th, which was week number 40 in the year - so we can calculate from here dates for the year
+# If the week number is bigger than 40, then we are after september 28th, so subtract 39 to make this count from week 1. 
+# If it is smaller than 40, then we must be in 2021 and so we add 14 as the first week in 2021 is the 14th week in the semester. 
+    video_calender_week_num = video_date.strftime("%V")
+    video_semester_week_num = ()
+    if int(video_calender_week_num) >= 40:
+        video_semester_week_num = int(video_calender_week_num) - 39
+    else:
+        video_semester_week_num = int(video_calender_week_num) + 14
+
+    video_week_num_list.append(video_semester_week_num)
+    print("Vid wk num", video_semester_week_num)
+   
+
+
+
 
 #zip the id and dates together so they can be stored together as a dict for easy access later, with the keys and values corresponding to id and time for each video. 
-zip_iterator = zip(video_link_list, video_date_list)
+zip_iterator = zip(video_html_list, video_week_num_list)
 video_dict = dict(zip_iterator)
 print("Dict", video_dict)
 
@@ -169,11 +174,18 @@ for folder , sub_folders , files in os.walk(os.getcwd()):
         html_root = str("<a href=")
         html_link_shoot = str(">"+ "Week Number "+ week_string + "</a><br>")
         slide_link = str(html_root + '"'+ link_to_this_slide + '"' + html_link_shoot)
+
+        #check if there is a video that corresponds to this week
+        link_to_this_video = ()
+        for i in video_dict:
+            if video_dict[i] == week_int:
+                link_to_this_video = i
+                print("Corresponding video link is: ", i)
   
 
         
         # create the summary
-        summary = str(slide_link)
+        summary = str(slide_link + link_to_this_video)
                        
         print("Summary: ", summary)
 
