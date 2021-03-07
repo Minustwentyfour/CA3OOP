@@ -198,7 +198,7 @@ for i in video_dict:
         link_to_this_video = i
         print("Corresponding video link is: ", i)
 
-# work out how many moodle sections need to be updated - this may be different depending on if there are more videos or slides. I added 1 just to be safe. 
+# work out how many moodle sections need to be updated - this may be different depending on if there are more videos or slides.  
 max_summary = ()
 if len(video_dict) >= len(slide_dict):
     max_summary = len(video_dict)
@@ -218,9 +218,13 @@ for i in range(max_summary):
             slide_summary = key
             print("Key is ", key)
 
+    #check if string is empty, because otherwise it prints "()"
+    if str(slide_summary) == "()":
+        summary = str(video_html_list[i-1])
+    else:
+        summary = (str(video_html_list[i-1]) + str(slide_summary))
 
-
-    summary = (str(video_html_list[i-1]) + str(slide_summary))
+    
                       
     print("Summary: ", summary)
 
