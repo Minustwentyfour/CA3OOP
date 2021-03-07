@@ -88,15 +88,15 @@ def find_week_number(text, c):
 
 #Generate link to google videos
 video_page = get("https://drive.google.com/drive/folders/1pFHUrmpLv9gEJsvJYKxMdISuQuQsd_qX")
-       #type(video_page)
+#type(video_page)
 video_page.text
 soup = bs4.BeautifulSoup(video_page.text, "lxml")
-print(soup)
+#print(soup)
 get_all_video_info = soup.find_all('div',class_ = 'Q5txwe') 
-print("Video info: ", get_all_video_info)
+#print("Video info: ", get_all_video_info)
 
 #create empty lists to store the timestamp, id, links for videos 
-video_time_list = []
+video_date_list = []
 video_id_list = []
 video_link_list = []
 video_html_list = []
@@ -110,9 +110,21 @@ for video in get_all_video_info:
 
 #find the date pattern and add to list 
     date_pattern = re.search('\d{4}-\d{2}-\d{2}', str(video))
-    video_times = datetime.datetime.strptime(date_pattern.group(), '%Y-%m-%d').date()
-    video_time_list.append(video_times)
-    print("time", video_times)
+    video_date = datetime.datetime.strptime(date_pattern.group(), '%Y-%m-%d').date()
+    video_date_list.append(video_date)
+    print("time", video_date)
+
+# find the week number. Semester started on september 28th, which was week number 40b in the year - so we can calculate from here dates for the year
+# If the week number is bigger than 40, then we are after september 28th, so subtract 39 to make this week 1. 
+# If it is smaller than 40, then we must be in 2021 and so we add 14 as it is the 14th week in the semester. 
+    video_calender_week_num = video_date.strftime("%V")
+    video_semester_week_num = ()
+    if int(video_calender_week_num) >= 40:
+        video_semester_week_num = int(video_calender_week_num) - 39
+    else:
+        video_semester_week_num = int(video_calender_week_num) + 14
+    print("Vid wk num", video_semester_week_num)
+   
 
 # Generates a link to the slides using the same link root and adding the week number
     video_link_root = str('https://drive.google.com/file/d/')
@@ -123,17 +135,14 @@ for video in get_all_video_info:
 
 #create html root and shoot (?! shoot is the opposite end to the root, right?! - That's what I mean anyway)
     html_root = str("<a href=")
-    html_video_shoot = str(">"+ "Lecture from date: "+ str(video_times) + "</a><br>")
+    html_video_shoot = str(">"+ "Lecture from date: "+ str(video_date) + "</a><br>")
     video_html_link = str(html_root + '"'+ link_to_this_video + '"' + html_video_shoot)
     video_html_list.append(video_html_link)
     print("html Link to video: ", video_html_link)
 
-print("Video id list: ", video_id_list)
-print("Video time list: ", video_time_list)
-
 
 #zip the id and dates together so they can be stored together as a dict for easy access later, with the keys and values corresponding to id and time for each video. 
-zip_iterator = zip(video_link_list, video_time_list)
+zip_iterator = zip(video_link_list, video_date_list)
 video_dict = dict(zip_iterator)
 print("Dict", video_dict)
 
