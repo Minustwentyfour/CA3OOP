@@ -3,8 +3,11 @@ import re
 import json
 import os
 import bs4 
-import lxml
 import datetime
+import os
+from lxml import html
+from urllib.request import urlopen
+
 
 # Module variables to connect to moodle api:
 ## Insert token and URL for your site here. 
@@ -78,24 +81,18 @@ data = [{'type': 'num', 'section': 1, 'summary': '',
  'summaryformat': 1, 'visible': 1 , 'highlight': 0, 
  'sectionformatoptions': [{'name': 'level', 'value': '1'}]}]
 
-
-
 # this function takes the folder name and string "wk" as inputs and returns any number that comes after the string in a folder name.
 # This means that a folder called "wk10" will return "10"
 def find_week_number(text, c):
     return re.findall(r'%s(\d+)' % c, text)
 
-
 #Generate link to google videos
 video_page = get("https://drive.google.com/drive/folders/1pFHUrmpLv9gEJsvJYKxMdISuQuQsd_qX")
-#type(video_page)
 video_page.text
 soup = bs4.BeautifulSoup(video_page.text, "lxml")
-#print(soup)
 get_all_video_info = soup.find_all('div',class_ = 'Q5txwe') 
-#print("Video info: ", get_all_video_info)
 
-#create empty lists to store the timestamp, id, links for videos 
+#create empty lists to store the timestamp, id, links, week numbers for videos 
 video_date_list = []
 video_id_list = []
 video_link_list = []
@@ -113,23 +110,20 @@ for video in get_all_video_info:
     date_pattern = re.search('\d{4}-\d{2}-\d{2}', str(video))
     video_date = datetime.datetime.strptime(date_pattern.group(), '%Y-%m-%d').date()
     video_date_list.append(video_date)
-    print("time", video_date)
 
-    # Generates a link to the slides using the same link root and adding the week number
+# Generates a link to the slides using the same link root and shoot, adding the week number
     video_link_root = str('https://drive.google.com/file/d/')
     video_link_shoot = str('/view')
     link_to_this_video = str(video_link_root + video_id + video_link_shoot)
     video_link_list.append(link_to_this_video)
-    print("Link to video: ", link_to_this_video)
 
-#create html root and shoot (?! shoot is the opposite end to the root, right?! - That's what I mean anyway)
-    html_root = str("<a href=")
+#create html root and shoot 
+    html_video_root = str("<a href=")
     html_video_shoot = str(">"+ "Video Link for lecture: "+ str(video_date) + "</a><br>")
-    video_html_link = str(html_root + '"'+ link_to_this_video + '"' + html_video_shoot)
+    video_html_link = str(html_video_root + '"'+ link_to_this_video + '"' + html_video_shoot)
     video_html_list.append(video_html_link)
-    print("html Link to video: ", video_html_link)
 
-# find the week number. Semester started on september 28th, which was week number 40 in the year - so we can calculate from here dates for the year
+# find the semester week number. Semester started on september 28th, which was week number 40 in the year - so we can calculate from here dates for the year
 # If the week number is bigger than 40, then we are after september 28th, so subtract 39 to make this count from week 1. 
 # If it is smaller than 40, then we must be in 2021 and so we add 14 as the first week in 2021 is the 14th week in the semester. 
     video_calender_week_num = video_date.strftime("%V")
@@ -137,20 +131,13 @@ for video in get_all_video_info:
     if int(video_calender_week_num) >= 40:
         video_semester_week_num = int(video_calender_week_num) - 39
     else:
-        video_semester_week_num = int(video_calender_week_num) + 14
+        video_semester_week_num = int(video_calender_week_num) + 15
 
     video_week_num_list.append(video_semester_week_num)
-    print("Vid wk num", video_semester_week_num)
-   
-
-
-
 
 #zip the id and dates together so they can be stored together as a dict for easy access later, with the keys and values corresponding to id and time for each video. 
 zip_iterator = zip(video_html_list, video_week_num_list)
 video_dict = dict(zip_iterator)
-print("Dict", video_dict)
-
 
 #create empty lists for our week number and slide links
 slide_week_list = []
@@ -158,45 +145,53 @@ slide_link_list = []
 
 # Walks through current directory in folders containing "wk"
 for folder , sub_folders , files in os.walk(os.getcwd()):
-    if (("wk" in folder) or ("Wk" in folder)) and ("index.html" in files):
-    
-    
-    # Finds the week number from the folder name and assigns to variable week - returns a list which must be converted to str or int to be used later
+    if (("wk" in folder) or ("Wk" in folder)) and ("index.html" in files):   
+
+# Finds the week number from the folder name and assigns to variable week - returns a list which must be converted to str or int to be used later
         week = find_week_number(folder, 'wk')
-        # convert week number to int - it only contains one element in the list, so the first element is all we need
+# convert week number to int - it only contains one element in the list, so the first element is all we need
         week_int = int(week[0])
-        # Converting into string 
+# Converting into string 
         week_string = str(week[0])
-
+# add to list of weeks
         slide_week_list.append(week_string)
-
-        print("Wk num is:", week_string)    
-        # Generates a link to the slides using the same link root and adding the week number
+  
+# Generates a link to the slides using the same link root and shoot and adding the week number
         slides_link_root = str('https://mikhail-cct.github.io/ca3-test/wk')
         link_to_this_slide = str(slides_link_root + week_string)
-        #print("Link to slide: ", link_to_this_slide)
 
-#create html root and shoot (?! shoot is the opposite end to the root, right?! - That's what I mean anyway)
-        html_root = str("<a href=")
-        html_link_shoot = str(">"+ "Lecture Slides for Week Number "+ week_string + "</a><br>")
-        slide_link = str(html_root + '"'+ link_to_this_slide + '"' + html_link_shoot)
-        slide_link_list.append(slide_link)
-       
+# get the lecture titles
+        url = link_to_this_slide
+        html = urlopen(url).read()
+        soup = bs4.BeautifulSoup(html, features="html.parser")
+# kill all script and style elements
+        for script in soup(["script", "style"]):
+            script.extract()    
+# get text
+        title = soup.get_text()
+# break into lines and remove leading and trailing space on each
+        lines = (line.strip() for line in title.splitlines())
+# break multi-headlines into a line each
+        chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+# drop blank lines
+        title = '\n'.join(chunk for chunk in chunks if chunk)
+
+#create html root and shoot 
+        html_slide_root = str("<a href=")
+        html_slide_shoot = str(">"+ "Lecture Slides for Week "+ week_string + " (" + title + ")" + "</a><br>")
+        slide_link = str(html_slide_root + '"'+ link_to_this_slide + '"' + html_slide_shoot)
         
-#create a dict to store the link and corresponding week number
+
+#create pdf link and concat to list containing index.html links created already
+        pdf_link_shoot = str("/wk" + week_string + ".pdf" + '"' + ">"+ "PDF for Week "+ week_string + "</a><br>")
+        pdf_link_this_slide = str(html_slide_root + '"' + link_to_this_slide + pdf_link_shoot)
+        slide_and_pdf_concat = str(slide_link) + str(pdf_link_this_slide)
+        slide_link_list.append(slide_and_pdf_concat)
+        pdf_link_no_html = str( slides_link_root + week_string + "/wk" + week_string + ".pdf")
+            
+#create a dict to store the link and corresponding week number, zipped together so they are stored with corresponding info
 zip_iterator = zip(slide_link_list, slide_week_list)
 slide_dict = dict(zip_iterator)
-print("slide Dict", slide_dict)
-
-    
-
-
-#check if there is a video that corresponds to this week
-link_to_this_video = ()
-for i in video_dict:
-    if video_dict[i] == week_int:
-        link_to_this_video = i
-        print("Corresponding video link is: ", i)
 
 # work out how many moodle sections need to be updated - this may be different depending on if there are more videos or slides.  
 max_summary = ()
@@ -204,29 +199,37 @@ if len(video_dict) >= len(slide_dict):
     max_summary = len(video_dict)
 else:
     max_summary = len(slide_dict)
-print("Max sum ", max_summary)
-
-
 
 # update moodle for the range of sections we have files for 
 for i in range(max_summary):
 
-    #first check for the slides - because these are currently not organised alphabetically so are difficult to manage
+#first check for the slides - create a summary if there is an entry for the week number matching the section we are updating.
+#create the summary for the slides
     slide_summary = ()
     for key, value in slide_dict.items():
         if i == int(value):
             slide_summary = key
-            print("Key is ", key)
 
-    #check if string is empty, because otherwise it prints "()"
-    if str(slide_summary) == "()":
-        summary = str(video_html_list[i-1])
-    else:
-        summary = (str(video_html_list[i-1]) + str(slide_summary))
+#check if there is a video that corresponds to this week
+# create summary for the videos
+    video_summary = ()
+#seperate keys and values - the section we are updating will add a video link if a value in video dict matches the section number 
+    key_list = list(video_dict.keys())
+    value_list = list(video_dict.values())
+    position = ()
+    video_summary = ()
+    if i in value_list:
+        video_summary = key_list[i-1]
 
+# Add summaries together. If slide summary is blank, only use video summary, and vice versa. Otherwise add concat summary so both summaries are added. 
+    both_summary = str(slide_summary) + str(video_summary)
     
-                      
-    print("Summary: ", summary)
+    if str(slide_summary) == "()":
+        summary = str(video_summary)
+    elif str(video_summary) == "()":
+        summary = str(slide_summary)
+    else:
+        summary = both_summary
 
     # Assign the correct summary
     data[0]['summary'] = summary
@@ -238,5 +241,7 @@ for i in range(max_summary):
     sec_write = LocalUpdateSections(courseid, data)
 
     sec = LocalGetSections(courseid)
+
+print("Master, I have completed my assignment.")
 
         
