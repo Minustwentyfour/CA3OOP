@@ -172,7 +172,7 @@ for folder , sub_folders , files in os.walk(os.getcwd()):
 
         #create html root and shoot (?! shoot is the opposite end to the root, right?! - That's what I mean anyway)
         html_root = str("<a href=")
-        html_link_shoot = str(">"+ "Week Number "+ week_string + "</a><br>")
+        html_link_shoot = str(">"+ "Lecture Slides for Week Number "+ week_string + "</a><br>")
         slide_link = str(html_root + '"'+ link_to_this_slide + '"' + html_link_shoot)
 
         #check if there is a video that corresponds to this week
@@ -185,7 +185,7 @@ for folder , sub_folders , files in os.walk(os.getcwd()):
 
         
         # create the summary
-        summary = str(slide_link + link_to_this_video)
+        summary = (str(slide_link) + str(link_to_this_video))
                        
         print("Summary: ", summary)
 
