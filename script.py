@@ -152,6 +152,10 @@ video_dict = dict(zip_iterator)
 print("Dict", video_dict)
 
 
+#create empty lists for our week number and slide links
+slide_week_list = []
+slide_link_list = []
+
 # Walks through current directory in folders containing "wk"
 for folder , sub_folders , files in os.walk(os.getcwd()):
     if (("wk" in folder) or ("Wk" in folder)) and ("index.html" in files):
@@ -164,38 +168,71 @@ for folder , sub_folders , files in os.walk(os.getcwd()):
         # Converting into string 
         week_string = str(week[0])
 
+        slide_week_list.append(week_string)
+
         print("Wk num is:", week_string)    
         # Generates a link to the slides using the same link root and adding the week number
         slides_link_root = str('https://mikhail-cct.github.io/ca3-test/wk')
         link_to_this_slide = str(slides_link_root + week_string)
         #print("Link to slide: ", link_to_this_slide)
 
-        #create html root and shoot (?! shoot is the opposite end to the root, right?! - That's what I mean anyway)
+#create html root and shoot (?! shoot is the opposite end to the root, right?! - That's what I mean anyway)
         html_root = str("<a href=")
         html_link_shoot = str(">"+ "Lecture Slides for Week Number "+ week_string + "</a><br>")
         slide_link = str(html_root + '"'+ link_to_this_slide + '"' + html_link_shoot)
+        slide_link_list.append(slide_link)
+       
+        
+#create a dict to store the link and corresponding week number
+zip_iterator = zip(slide_link_list, slide_week_list)
+slide_dict = dict(zip_iterator)
+print("slide Dict", slide_dict)
 
-        #check if there is a video that corresponds to this week
-        link_to_this_video = ()
-        for i in video_dict:
-            if video_dict[i] == week_int:
-                link_to_this_video = i
-                print("Corresponding video link is: ", i)
-  
+    
+
+
+#check if there is a video that corresponds to this week
+link_to_this_video = ()
+for i in video_dict:
+    if video_dict[i] == week_int:
+        link_to_this_video = i
+        print("Corresponding video link is: ", i)
+
+# work out how many moodle sections need to be updated - this may be different depending on if there are more videos or slides. I added 1 just to be safe. 
+max_summary = ()
+if len(video_dict) >= len(slide_dict):
+    max_summary = len(video_dict)
+else:
+    max_summary = len(slide_dict)
+print("Max sum ", max_summary)
+
+
+
+# update moodle for the range of sections we have files for 
+for i in range(max_summary):
+
+    #first check for the slides - because these are currently not organised alphabetically so are difficult to manage
+    slide_summary = ()
+    for key, value in slide_dict.items():
+        if i == int(value):
+            slide_summary = key
+            print("Key is ", key)
+
+
+
+    summary = (str(video_html_list[i-1]) + str(slide_summary))
+                      
+    print("Summary: ", summary)
+
+    # Assign the correct summary
+    data[0]['summary'] = summary
+
+    # Set the correct section number
+    data[0]['section'] = i
+
+    # Write the data back to Moodle
+    sec_write = LocalUpdateSections(courseid, data)
+
+    sec = LocalGetSections(courseid)
 
         
-        # create the summary
-        summary = (str(slide_link) + str(link_to_this_video))
-                       
-        print("Summary: ", summary)
-
-        # Assign the correct summary
-        data[0]['summary'] = summary
-
-        # Set the correct section number
-        data[0]['section'] = week_int
-
-        # Write the data back to Moodle
-        sec_write = LocalUpdateSections(courseid, data)
-
-        sec = LocalGetSections(courseid)
